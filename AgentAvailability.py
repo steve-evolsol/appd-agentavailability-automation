@@ -6,7 +6,7 @@ import re
 # shows up if the wrong arugments or not enough arguments were added
 expectedArgs = "appd-availability.py -c <controller> -a <application> -n <account> -u <user> -p <pass>"
 
-# this function edits the jason payload used to create a payload and adds in the dynamics variables for grabbing the node name 
+# this function edits the JSON payload used to create a payload and adds in the dynamics variables for grabbing the node name 
 def returnJSONPayload(machineName, tierName, nodeName):
     return {
     "name": "Availability | {} | {}".format(tierName, machineName),
@@ -59,7 +59,7 @@ def returnJSONPayload(machineName, tierName, nodeName):
 # this function uses the user input to gather all of the tier information for the application
 def getApplicationTiers(controllerURL, applicationID, authUserID, appDPass):
     # api-endpoint 
-    URL = controllerURL + "/controller/rest/applications/{}/tiers?output=JSON".format(applicationID)
+    URL = "{}/controller/rest/applications/{}/tiers?output=JSON".format(controllerURL, applicationID)
     r = requests.get(URL, auth=(authUserID, appDPass))
     data = r.json()
 
@@ -70,7 +70,7 @@ def getTierNodesCreateHR(controllerURL, applicationID, authUserID, appDPass, tie
 
     for tier in tiers:
         tierID = str(tier['id'])
-        URL = controllerURL + "/controller/rest/applications/{}/tiers/{}/nodes?output=JSON".format(applicationID, tierID)
+        URL = "{}/controller/rest/applications/{}/tiers/{}/nodes?output=JSON".format(controllerURL, applicationID, tierID)
         r = requests.get(URL, auth=(authUserID, appDPass))
         nodes = r.json()
 
