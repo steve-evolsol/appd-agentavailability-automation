@@ -1,10 +1,12 @@
 import requests
 import json
 import sys, getopt
+import re
 
-
+# shows up if the wrong arugments or not enough arguments were added
 expectedArgs = "appd-availability.py -c <controller> -a <application> -n <account> -u <user> -p <pass>"
 
+# this function edits the jason payload used to create a payload and adds in the dynamics variables for grabbing the node name 
 def returnJSONPayload(machineName, tierName, nodeName):
     return {
     "name": "Availability | {} | {}".format(tierName, machineName),
@@ -54,23 +56,21 @@ def returnJSONPayload(machineName, tierName, nodeName):
     }
 }
 
+# this function uses the user input to gather all of the tier information for the application
 def getApplicationTiers(controllerURL, applicationID, authUserID, appDPass):
     # api-endpoint 
-    URL = controllerURL + "/controller/rest/applications/" + applicationID + "/tiers?output=JSON"
-    print(URL)
-    print(authUserID)
-    print(appDPass)
+    URL = controllerURL + "/controller/rest/applications/{}/tiers?output=JSON".format(applicationID)
     r = requests.get(URL, auth=(authUserID, appDPass))
-    print("Response Code: {}, Response Body: {}, Reason: {}".format(r, r.content, r.reason))
     data = r.json()
 
     return data
 
+# This function uses the identified tiers fron the getApplicationTiers function to get all of the nodes in a tier and create health rule
 def getTierNodesCreateHR(controllerURL, applicationID, authUserID, appDPass, tiers):
-    # api-endpoint
+
     for tier in tiers:
         tierID = str(tier['id'])
-        URL = controllerURL + "/controller/rest/applications/" + applicationID + "/tiers/" + tierID + "/nodes?output=JSON"
+        URL = controllerURL + "/controller/rest/applications/{}/tiers/{}/nodes?output=JSON".format(applicationID, tierID)
         r = requests.get(URL, auth=(authUserID, appDPass))
         nodes = r.json()
 
@@ -83,13 +83,16 @@ def getTierNodesCreateHR(controllerURL, applicationID, authUserID, appDPass, tie
             r = requests.post(HRurl, json = payload, auth=(authUserID, appDPass)) 
             print(r.content)
 
-## Main(?) Code ##
+## Main Code ##
 def main(argv):
     controllerURL = ''
     appDPass = ''
     appDUser = ''
     applicationID = ''
     appDaccountname = ''
+
+    # this regex captures everything but the first and last character
+    regex = "(?<!^).(?!$)"
 
     try:
         opts, args = getopt.getopt(argv,"hc:p:u:a:n:",["controller=","pass=","user=","application=","account="])
@@ -130,10 +133,18 @@ def main(argv):
     
     authUserID = appDUser + "@" + appDaccountname
     tiers = None
+   
+    # These two commands create a "hidden" password on the console
+    hiddenPassword = ""
+    hiddenPassword = re.sub(regex, '*', appDPass)
+
+    print ("Controller is {}, App is {}, User is {}, Password is {}, Account is {}".format(controllerURL, applicationID, appDUser, hiddenPassword, appDaccountname))
     
-    print ("Controller is {}, App is {}, User is {}, Password is {}, Account is {}".format(controllerURL, applicationID, appDUser, appDPass, appDaccountname))
-    
+    # gets all the tier information and node IDs
     tiers = getApplicationTiers(controllerURL, applicationID, authUserID, appDPass)
+
+    # uses nodeID to get information needed for health rule
     getTierNodesCreateHR(controllerURL, applicationID, authUserID, appDPass, tiers)
+
 if __name__ == "__main__":
    main(sys.argv[1:])
