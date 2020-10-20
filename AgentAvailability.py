@@ -61,7 +61,6 @@ def getApplicationTiers(controllerURL, applicationID, authUserID, appDPass):
     print(authUserID)
     print(appDPass)
     r = requests.get(URL, auth=(authUserID, appDPass))
-    # r = requests.get(URL, auth=("Controller@evolvingnfr", "controller"))
     print("Response Code: {}, Response Body: {}, Reason: {}".format(r, r.content, r.reason))
     data = r.json()
 
