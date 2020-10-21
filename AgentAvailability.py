@@ -56,6 +56,19 @@ def returnJSONPayload(machineName, tierName, nodeName):
     }
 }
 
+def getApplicationName(controllerURL, applicationID, authUserID, appDPass):
+    # api-endpoint 
+    appName = ''
+    URL = "{}/controller/rest/applications?output=JSON".format(controllerURL)
+    r = requests.get(URL, auth=(authUserID, appDPass))
+    data = r.json()
+
+    for app in data:
+        if int(applicationID) is int(app['id']):
+            appName = app['name']
+
+    return appName
+
 # this function uses the user input to gather all of the tier information for the application
 def getApplicationTiers(controllerURL, applicationID, authUserID, appDPass):
     # api-endpoint 
@@ -67,7 +80,6 @@ def getApplicationTiers(controllerURL, applicationID, authUserID, appDPass):
 
 # This function uses the identified tiers fron the getApplicationTiers function to get all of the nodes in a tier and create health rule
 def getTierNodesCreateHR(controllerURL, applicationID, authUserID, appDPass, tiers):
-
     for tier in tiers:
         tierID = str(tier['id'])
         URL = "{}/controller/rest/applications/{}/tiers/{}/nodes?output=JSON".format(controllerURL, applicationID, tierID)
@@ -88,7 +100,7 @@ def main(argv):
     controllerURL = ''
     appDPass = ''
     appDUser = ''
-    applicationID = ''
+    applicationID = 0
     appDaccountname = ''
 
     # this regex captures everything but the first and last character
@@ -140,6 +152,9 @@ def main(argv):
 
     print ("Controller is {}, App is {}, User is {}, Password is {}, Account is {}".format(controllerURL, applicationID, appDUser, hiddenPassword, appDaccountname))
     
+    #  This grabs the application name that was specified 
+    appName = getApplicationName(controllerURL, applicationID, authUserID, appDPass)
+
     # gets all the tier information and node IDs
     tiers = getApplicationTiers(controllerURL, applicationID, authUserID, appDPass)
 
