@@ -1,0 +1,1 @@
+This is a script to automate the creation of AppDynamics Agent Availibility Health Rules and automate the creation of dashboards that to view these Health Rules in a layered way. 
