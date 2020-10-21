@@ -164,7 +164,7 @@ def getApplicationName(controllerURL, applicationID, authUserID, appDPass):
     data = r.json()
 
     for app in data:
-        if int(applicationID) is int(app['id']):
+        if int(applicationID) == int(app['id']):
             appName = app['name']
 
     return appName
