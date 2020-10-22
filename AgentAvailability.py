@@ -92,7 +92,7 @@ def generateDashboardTier(appName, tierName, locX):
         "showBarPie": False,
         "showPie": True,
         "innerRadius": 0,
-        "aggregationType": "MOST_SEVERE"
+        "aggregationType": "RATIO"
 }
 
 # generate the JSON for a dashboard node
